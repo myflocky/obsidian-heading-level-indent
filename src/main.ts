@@ -27,6 +27,9 @@ export default class HeadingIndent extends Plugin {
 			this.registerEditorExtension(indentEmbedsPlugin);
 			this.registerEditorExtension(resizeNotificationPlugin);
 		}
+		this.registerMarkdownPostProcessor((element, context) => {
+			this.applyIndentToMarkdown(element);
+		}, 10);
 	}
 
 	/**
@@ -117,5 +120,50 @@ export default class HeadingIndent extends Plugin {
 		// todo: is this working?
 		this.app.workspace.offref(this.activeLeafChangeListener);
 		this.app.workspace.offref(this.layoutChange);
+	}
+	
+	// New method: Apply indentation to Markdown elements
+	applyIndentToMarkdown(element: HTMLElement) {
+		// Run only once on the root container to avoid duplicate processing
+		if (!element.classList.contains('markdown-preview-view')) {
+			return;
+		}
+
+		const settings = this.settings;
+		const divs = element.querySelectorAll('div > h1, div > h2, div > h3, div > h4, div > h5, div > h6, div > p, div > ul, div > ol, div > blockquote, div > table');
+
+		let currentHeadingLevel = 0;
+		let lastHeadingElement = null;
+
+		const divsArray = Array.from(divs);
+		// Iterate through all elements
+		for (const element of divsArray) {
+			const tagName = element.tagName.toLowerCase();
+
+			// If it's a heading
+			if (tagName.match(/^h[1-6]$/)) {
+				const level = parseInt(tagName.charAt(1));
+				currentHeadingLevel = level;
+				lastHeadingElement = element as HTMLElement;
+
+				// Set the heading's indentation (using the previous heading level's indentation value)
+				const parentDiv = element.parentElement;
+				if (parentDiv && parentDiv.tagName === 'DIV') {
+					const indent = (settings as any)[`h${level - 1}`] || 0;
+					parentDiv.style.paddingLeft = `${indent}px`;
+					parentDiv.classList.add(`heading_h${level}`);
+				}
+			}
+			// If it's a content element
+			else if (currentHeadingLevel > 0) {
+				// Find the div containing this content
+				const parentDiv = element.parentElement;
+				if (parentDiv && parentDiv.tagName === 'DIV' && parentDiv !== lastHeadingElement?.parentElement) {
+					const indent = (settings as any)[`h${currentHeadingLevel}`] || 0;
+					parentDiv.style.paddingLeft = `${indent}px`;
+					parentDiv.classList.add(`data_h${currentHeadingLevel}`);
+				}
+			}
+		}
 	}
 }
