@@ -137,17 +137,23 @@ export default class HeadingIndent extends Plugin {
 
 		const divsArray = Array.from(divs);
 		// Iterate through all elements
-		for (const element of divsArray) {
-			const tagName = element.tagName.toLowerCase();
+		for (const element2 of divsArray) {
+			// Skip inline title, which is also h1
+			if (element.closest('.print') !== null && element2.classList.contains('__title__')) {
+			  console.log('PDF export: Skip inline title, dont number its heading');
+			  continue;
+			}
+			
+			const tagName = element2.tagName.toLowerCase();
 
 			// If it's a heading
 			if (tagName.match(/^h[1-6]$/)) {
 				const level = parseInt(tagName.charAt(1));
 				currentHeadingLevel = level;
-				lastHeadingElement = element as HTMLElement;
+				lastHeadingElement = element2 as HTMLElement;
 
 				// Set the heading's indentation (using the previous heading level's indentation value)
-				const parentDiv = element.parentElement;
+				const parentDiv = element2.parentElement;
 				if (parentDiv && parentDiv.tagName === 'DIV') {
 					const indent = (settings as any)[`h${level - 1}`] || 0;
 					parentDiv.style.paddingLeft = `${indent}px`;
@@ -157,7 +163,7 @@ export default class HeadingIndent extends Plugin {
 			// If it's a content element
 			else if (currentHeadingLevel > 0) {
 				// Find the div containing this content
-				const parentDiv = element.parentElement;
+				const parentDiv = element2.parentElement;
 				if (parentDiv && parentDiv.tagName === 'DIV' && parentDiv !== lastHeadingElement?.parentElement) {
 					const indent = (settings as any)[`h${currentHeadingLevel}`] || 0;
 					parentDiv.style.paddingLeft = `${indent}px`;
