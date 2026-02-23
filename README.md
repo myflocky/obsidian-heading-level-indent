@@ -37,7 +37,7 @@ Download available through Community plugins in Obsidian settings
 A new standalone listener, **`VHeadingLevelIndentListener`**, has been introduced to monitor changes to the `vheadinglevelindent` frontmatter field.
 
 * Listens for metadata changes in the active file
-* Enables or disables heading indent in real time，Heading indent can be toggled using the frontmatter property: vheadinglevelindent. Setting vheadinglevelindent: 1 enables indent, while omitting the property or setting it to 0 disables it.
+* Enables or disables heading indent in real time，Heading indent can be toggled using the frontmatter property: vheadinglevelindent. Omitting the property or setting vheadinglevelindent: 1 enables indent, while setting it to 0 disables it.
 * Triggers a preview re-render when the value changes
 * Enable heading indent by default unless vheadinglevelindent is set to 0, If the vheadinglevelindent option is not set, indent will still be applied. Numbering is disabled only when vheadinglevelindent is explicitly set to 0.
 
