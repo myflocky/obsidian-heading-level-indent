@@ -200,6 +200,16 @@ export class ShitIndenting {
 			});
 		}
 	}
+	clearCurrentView() {
+		const container = activeDocument.querySelector<HTMLElement>(this.containerSelector);
+		if (!container) 
+			return;
+		const divs = Array.from(container.children) as HTMLElement[];
+		this.cleanSectionModifications(divs); // 复用已有的清理方法
+	}
+	applyToCurrentView(plugin : HeadingIndent) {
+		this.applyIndentation(plugin); // 直接对当前视图应用缩进
+	}
 }
 
 /*

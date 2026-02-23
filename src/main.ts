@@ -9,12 +9,49 @@ import {
 } from "./editingMode";
 import { ShitIndenting } from "./readingMode";
 import { DEFAULT_SETTINGS, HeadingIndentSettings, IndentSettingTab } from "./settings";
+import {
+	initVHeadingLevelIndentListener, 
+	getVHeadingLevelIndentListener
+} from "./VHeadingLevelIndentListener";
 
 export default class HeadingIndent extends Plugin {
 	settings: HeadingIndentSettings;
 	shitIndenting: ShitIndenting;
 	activeLeafChangeListener: any;
 	layoutChange: any;
+	
+	constructor(app: any, manifest: any) {
+		super(app, manifest);
+		initVHeadingLevelIndentListener(this.app);
+		getVHeadingLevelIndentListener().start();
+		getVHeadingLevelIndentListener().addListener((newValue, oldValue) => {
+			console.log(`HeadingIndent received change notification: ${oldValue} -> ${newValue}`);
+
+			if(getVHeadingLevelIndentListener().currentVHeadingLevelIndent !== "0"){
+				this.shitRunner();
+				if(this.shitIndenting)
+					this.shitIndenting.applyToCurrentView(this);
+			}
+			else{
+				this.shitCleaner();
+				if(this.shitIndenting)
+				if(oldValue==null && newValue=="0")
+					setTimeout(() => {this.shitIndenting.clearCurrentView();},250);
+				else
+					this.shitIndenting.clearCurrentView()
+			}
+
+			this.app.workspace.iterateAllLeaves((leaf) => {
+				var _a;
+				const view = (_a = (leaf.view as MarkdownView).editor) == null ? void 0 : (_a as any).cm;
+				if (view) {
+					view.dispatch({
+						effects: updateNeededNotificationEffect.of()
+					});
+				}
+			});
+		});
+	}
 
 	// Configure resources needed by the plugin.
 	async onload() {
@@ -124,6 +161,9 @@ export default class HeadingIndent extends Plugin {
 	
 	// New method: Apply indentation to Markdown elements
 	applyIndentToMarkdown(element: HTMLElement) {
+		if (getVHeadingLevelIndentListener().currentVHeadingLevelIndent === "0")
+			return;
+
 		// Run only once on the root container to avoid duplicate processing
 		if (!element.classList.contains('markdown-preview-view')) {
 			return;
